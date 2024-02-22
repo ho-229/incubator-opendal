@@ -41,7 +41,7 @@
 <p>By implement this trait, any kv service can work as an OpenDAL Service.</p>
 <h2 id="notes"><a href="#notes">Notes</a></h2>
 <p><code>typed_kv::Adapter</code> is the typed version of <code>kv::Adapter</code>. It’s more
-efficient if the uderlying kv service can store data with its type. For
+efficient if the underlying kv service can store data with its type. For
 example, we can store <code>Bytes</code> along with it’s metadata so that we don’t
 need to serialize/deserialize it when we get it from the service.</p>
 <p>Ideally, we should use <code>typed_kv::Adapter</code> instead of <code>kv::Adapter</code> for
