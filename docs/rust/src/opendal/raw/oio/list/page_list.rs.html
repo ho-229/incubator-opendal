@@ -185,7 +185,7 @@
 
 <span class="doccomment">/// PageContext is the context passing between `PageList`.
 ///
-/// [`PageLister`] will init the PageContext, and implementor of [`PageList`] should fill the `PageContext`
+/// [`PageLister`] will init the PageContext, and implementer of [`PageList`] should fill the `PageContext`
 /// based on their needs.
 ///
 /// - Set `done` to `true` if all page have been fetched.
@@ -201,7 +201,7 @@
     <span class="doccomment">/// entries is used to store entries fetched from underlying storage.
     ///
     /// Please always reuse the same `VecDeque` to avoid unnecessary memory allocation.
-    /// PageLister makes sure that entries is reset before calling `next_page`. Implementor
+    /// PageLister makes sure that entries is reset before calling `next_page`. Implementer
     /// can calling `push_back` on `entries` directly.
     </span><span class="kw">pub </span>entries: VecDeque&lt;oio::Entry&gt;,
 }
@@ -213,7 +213,7 @@
 
 <span class="kw">enum </span>State&lt;L&gt; {
     Idle(<span class="prelude-ty">Option</span>&lt;(L, PageContext)&gt;),
-    Fetch(BoxedFuture&lt;((L, PageContext), <span class="prelude-ty">Result</span>&lt;()&gt;)&gt;),
+    Fetch(BoxedStaticFuture&lt;((L, PageContext), <span class="prelude-ty">Result</span>&lt;()&gt;)&gt;),
 }
 
 <span class="doccomment">/// # Safety

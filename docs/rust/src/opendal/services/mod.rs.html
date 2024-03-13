@@ -395,6 +395,10 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -532,7 +536,9 @@
 <span class="attr">#[cfg(feature = <span class="string">"services-memory"</span>)]
 </span><span class="kw">mod </span>memory;
 <span class="attr">#[cfg(feature = <span class="string">"services-memory"</span>)]
-</span><span class="kw">pub use </span>memory::Memory;
+</span><span class="kw">pub use </span><span class="self">self</span>::memory::Memory;
+<span class="attr">#[cfg(feature = <span class="string">"services-memory"</span>)]
+</span><span class="kw">pub use </span><span class="self">self</span>::memory::MemoryConfig;
 
 <span class="attr">#[cfg(feature = <span class="string">"services-mini-moka"</span>)]
 </span><span class="kw">mod </span>mini_moka;
@@ -598,6 +604,8 @@
 </span><span class="kw">mod </span>sled;
 <span class="attr">#[cfg(feature = <span class="string">"services-sled"</span>)]
 </span><span class="kw">pub use </span><span class="self">self</span>::sled::Sled;
+<span class="attr">#[cfg(feature = <span class="string">"services-sled"</span>)]
+</span><span class="kw">pub use </span><span class="self">self</span>::sled::SledConfig;
 
 <span class="attr">#[cfg(feature = <span class="string">"services-supabase"</span>)]
 </span><span class="kw">mod </span>supabase;
