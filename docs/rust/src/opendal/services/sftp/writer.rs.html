@@ -73,14 +73,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-</span><span class="kw">use </span>std::pin::Pin;
+</span><span class="kw">use </span>bytes::Buf;
+<span class="kw">use </span>std::pin::Pin;
 
-<span class="kw">use </span>bytes::Bytes;
 <span class="kw">use </span>openssh_sftp_client::file::File;
 <span class="kw">use </span>openssh_sftp_client::file::TokioCompatFile;
 <span class="kw">use </span>tokio::io::AsyncWriteExt;
 
-<span class="kw">use </span><span class="kw">crate</span>::raw::{new_std_io_error, oio};
+<span class="kw">use </span><span class="kw">crate</span>::raw::<span class="kw-2">*</span>;
 <span class="kw">use crate</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>SftpWriter {
@@ -97,8 +97,8 @@
 }
 
 <span class="kw">impl </span>oio::Write <span class="kw">for </span>SftpWriter {
-    <span class="kw">async fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bs: Bytes) -&gt; <span class="prelude-ty">Result</span>&lt;usize&gt; {
-        <span class="self">self</span>.file.write(<span class="kw-2">&amp;</span>bs).<span class="kw">await</span>.map_err(new_std_io_error)
+    <span class="kw">async fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bs: oio::Buffer) -&gt; <span class="prelude-ty">Result</span>&lt;usize&gt; {
+        <span class="self">self</span>.file.write(bs.chunk()).<span class="kw">await</span>.map_err(new_std_io_error)
     }
 
     <span class="kw">async fn </span>close(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
