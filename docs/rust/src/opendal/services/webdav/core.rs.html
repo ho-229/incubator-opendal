@@ -840,16 +840,6 @@
 <a href="#838" id="838">838</a>
 <a href="#839" id="839">839</a>
 <a href="#840" id="840">840</a>
-<a href="#841" id="841">841</a>
-<a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
-<a href="#846" id="846">846</a>
-<a href="#847" id="847">847</a>
-<a href="#848" id="848">848</a>
-<a href="#849" id="849">849</a>
-<a href="#850" id="850">850</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -960,7 +950,7 @@
         </span>req = req.header(HEADER_DEPTH, <span class="string">"0"</span>);
 
         <span class="kw">let </span>req = req
-            .body(AsyncBody::Bytes(Bytes::from(PROPFIND_REQUEST)))
+            .body(Buffer::from(Bytes::from(PROPFIND_REQUEST)))
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>resp = <span class="self">self</span>.client.send(req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -987,7 +977,7 @@
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
         <span class="kw">_</span>: <span class="kw-2">&amp;</span>OpRead,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>path = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span>url: String = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>path));
 
@@ -1001,9 +991,7 @@
             req = req.header(header::RANGE, range.to_header());
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
@@ -1013,8 +1001,8 @@
         path: <span class="kw-2">&amp;</span>str,
         size: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         args: <span class="kw-2">&amp;</span>OpWrite,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>path = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>path));
 
@@ -1041,7 +1029,7 @@
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>webdav_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webdav_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>path = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>path));
 
@@ -1051,14 +1039,12 @@
             req = req.header(header::AUTHORIZATION, auth.clone())
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>webdav_copy(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webdav_copy(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="comment">// Check if source file exists.
         </span><span class="kw">let _ </span>= <span class="self">self</span>.webdav_stat(from).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="comment">// Make sure target's dir is exist.
@@ -1079,14 +1065,12 @@
         req = req.header(HEADER_DESTINATION, target_uri);
         req = req.header(HEADER_OVERWRITE, <span class="string">"T"</span>);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>webdav_move(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webdav_move(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="comment">// Check if source file exists.
         </span><span class="kw">let _ </span>= <span class="self">self</span>.webdav_stat(from).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="comment">// Make sure target's dir is exist.
@@ -1107,14 +1091,12 @@
         req = req.header(HEADER_DESTINATION, target_uri);
         req = req.header(HEADER_OVERWRITE, <span class="string">"T"</span>);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>webdav_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, args: <span class="kw-2">&amp;</span>OpList) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webdav_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, args: <span class="kw-2">&amp;</span>OpList) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>path = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>path));
 
@@ -1133,7 +1115,7 @@
         }
 
         <span class="kw">let </span>req = req
-            .body(AsyncBody::Bytes(Bytes::from(PROPFIND_REQUEST)))
+            .body(Buffer::from(Bytes::from(PROPFIND_REQUEST)))
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
@@ -1190,9 +1172,7 @@
             req = req.header(header::AUTHORIZATION, auth.clone())
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>resp = <span class="self">self</span>.client.send(req).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>status = resp.status();

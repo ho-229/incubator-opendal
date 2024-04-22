@@ -572,15 +572,6 @@
 <a href="#570" id="570">570</a>
 <a href="#571" id="571">571</a>
 <a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -649,10 +640,13 @@
             </span>.map_err(new_request_credential_error)<span class="question-mark">?</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(cred) = cred {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cred))
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cred));
         }
+
+        <span class="prelude-val">Err</span>(Error::new(
+            ErrorKind::PermissionDenied,
+            <span class="string">"no valid credential found and anonymous access is not allowed"</span>,
+        ))
     }
 
     <span class="kw">pub async fn </span>sign&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, req: <span class="kw-2">&amp;mut </span>Request&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -678,7 +672,7 @@
     }
 
     <span class="attr">#[inline]
-    </span><span class="kw">pub async fn </span>send(<span class="kw-2">&amp;</span><span class="self">self</span>, req: Request&lt;AsyncBody&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    </span><span class="kw">pub async fn </span>send(<span class="kw-2">&amp;</span><span class="self">self</span>, req: Request&lt;Buffer&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 }
@@ -689,7 +683,7 @@
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
         args: <span class="kw-2">&amp;</span>OpRead,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>req = <span class="self">self</span>.cos_get_object_request(path, range, args)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -702,7 +696,7 @@
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
         args: <span class="kw-2">&amp;</span>OpRead,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}/{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -721,9 +715,7 @@
             req = req.header(IF_NONE_MATCH, if_none_match);
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(req)
     }
@@ -733,8 +725,8 @@
         path: <span class="kw-2">&amp;</span>str,
         size: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         args: <span class="kw-2">&amp;</span>OpWrite,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}/{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -759,11 +751,7 @@
         <span class="prelude-val">Ok</span>(req)
     }
 
-    <span class="kw">pub async fn </span>cos_head_object(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        path: <span class="kw-2">&amp;</span>str,
-        args: <span class="kw-2">&amp;</span>OpStat,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>cos_head_object(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, args: <span class="kw-2">&amp;</span>OpStat) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>req = <span class="self">self</span>.cos_head_object_request(path, args)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -771,7 +759,7 @@
         <span class="self">self</span>.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub fn </span>cos_head_object_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, args: <span class="kw-2">&amp;</span>OpStat) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+    <span class="kw">pub fn </span>cos_head_object_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, args: <span class="kw-2">&amp;</span>OpStat) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}/{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -786,23 +774,19 @@
             req = req.header(IF_NONE_MATCH, if_none_match);
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(req)
     }
 
-    <span class="kw">pub async fn </span>cos_delete_object(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>cos_delete_object(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}/{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
 
         <span class="kw">let </span>req = Request::delete(<span class="kw-2">&amp;</span>url);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -815,8 +799,8 @@
         position: u64,
         size: u64,
         args: <span class="kw-2">&amp;</span>OpWrite,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span>url = <span class="macro">format!</span>(
             <span class="string">"{}/{}?append&amp;position={}"</span>,
@@ -845,7 +829,7 @@
         <span class="prelude-val">Ok</span>(req)
     }
 
-    <span class="kw">pub async fn </span>cos_copy_object(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>cos_copy_object(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>source = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, from);
         <span class="kw">let </span>target = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, to);
 
@@ -854,7 +838,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>req = Request::put(<span class="kw-2">&amp;</span>url)
             .header(<span class="string">"x-cos-copy-source"</span>, <span class="kw-2">&amp;</span>source)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -868,7 +852,7 @@
         next_marker: <span class="kw-2">&amp;</span>str,
         delimiter: <span class="kw-2">&amp;</span>str,
         limit: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span><span class="kw-2">mut </span>queries = <span class="macro">vec!</span>[];
@@ -892,7 +876,7 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>req = Request::get(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -904,7 +888,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         args: <span class="kw-2">&amp;</span>OpWrite,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}/{}?uploads"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -923,9 +907,7 @@
             req = req.header(CACHE_CONTROL, cache_control)
         }
 
-        <span class="kw">let </span><span class="kw-2">mut </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -938,8 +920,8 @@
         upload_id: <span class="kw-2">&amp;</span>str,
         part_number: usize,
         size: u64,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -965,7 +947,7 @@
         path: <span class="kw-2">&amp;</span>str,
         upload_id: <span class="kw-2">&amp;</span>str,
         parts: Vec&lt;CompleteMultipartUploadRequestPart&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -985,7 +967,7 @@
         </span><span class="kw">let </span>req = req.header(CONTENT_TYPE, <span class="string">"application/xml"</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>req = req
-            .body(AsyncBody::Bytes(Bytes::from(content)))
+            .body(Buffer::from(Bytes::from(content)))
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -998,7 +980,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         upload_id: <span class="kw-2">&amp;</span>str,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -1009,7 +991,7 @@
         );
 
         <span class="kw">let </span><span class="kw-2">mut </span>req = Request::delete(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
         <span class="self">self</span>.sign(<span class="kw-2">&amp;mut </span>req).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="self">self</span>.send(req).<span class="kw">await

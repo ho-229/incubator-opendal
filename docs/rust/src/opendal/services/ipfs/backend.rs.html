@@ -448,12 +448,6 @@
 <a href="#446" id="446">446</a>
 <a href="#447" id="447">447</a>
 <a href="#448" id="448">448</a>
-<a href="#449" id="449">449</a>
-<a href="#450" id="450">450</a>
-<a href="#451" id="451">451</a>
-<a href="#452" id="452">452</a>
-<a href="#453" id="453">453</a>
-<a href="#454" id="454">454</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -804,7 +798,7 @@
 }
 
 <span class="kw">impl </span>IpfsBackend {
-    <span class="kw">pub async fn </span>ipfs_get(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, range: BytesRange) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>ipfs_get(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, range: BytesRange) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -815,28 +809,24 @@
             req = req.header(http::header::RANGE, range.to_header());
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">async fn </span>ipfs_head(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">async fn </span>ipfs_head(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
 
         <span class="kw">let </span>req = Request::head(<span class="kw-2">&amp;</span>url);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">async fn </span>ipfs_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">async fn </span>ipfs_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">"{}{}"</span>, <span class="self">self</span>.endpoint, percent_encode_path(<span class="kw-2">&amp;</span>p));
@@ -849,9 +839,7 @@
         // ref: https://github.com/ipfs/specs/blob/main/http-gateways/PATH_GATEWAY.md
         </span>req = req.header(http::header::ACCEPT, <span class="string">"application/vnd.ipld.raw"</span>);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}

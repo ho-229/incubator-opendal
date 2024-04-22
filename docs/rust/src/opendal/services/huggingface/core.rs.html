@@ -404,10 +404,6 @@
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
 <a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -459,7 +455,7 @@
 }
 
 <span class="kw">impl </span>HuggingfaceCore {
-    <span class="kw">pub async fn </span>hf_path_info(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>hf_path_info(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path)
             .trim_end_matches(<span class="string">'/'</span>)
             .to_string();
@@ -487,13 +483,13 @@
         <span class="kw">let </span>req_body = <span class="macro">format!</span>(<span class="string">"paths={}&amp;expand=True"</span>, percent_encode_path(<span class="kw-2">&amp;</span>p));
 
         <span class="kw">let </span>req = req
-            .body(AsyncBody::Bytes(Bytes::from(req_body)))
+            .body(Buffer::from(Bytes::from(req_body)))
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>hf_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, recursive: bool) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>hf_list(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, recursive: bool) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path)
             .trim_end_matches(<span class="string">'/'</span>)
             .to_string();
@@ -524,9 +520,7 @@
             req = req.header(header::AUTHORIZATION, auth_header_content);
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
@@ -536,7 +530,7 @@
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
         _args: <span class="kw-2">&amp;</span>OpRead,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path)
             .trim_end_matches(<span class="string">'/'</span>)
             .to_string();
@@ -567,9 +561,7 @@
             req = req.header(header::RANGE, range.to_header());
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}

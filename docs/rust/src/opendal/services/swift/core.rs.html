@@ -287,12 +287,6 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -339,7 +333,7 @@
 }
 
 <span class="kw">impl </span>SwiftCore {
-    <span class="kw">pub async fn </span>swift_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>swift_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -353,7 +347,7 @@
 
         req = req.header(<span class="string">"X-Auth-Token"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.token);
 
-        <span class="kw">let </span>body = AsyncBody::Empty;
+        <span class="kw">let </span>body = Buffer::new();
 
         <span class="kw">let </span>req = req.body(body).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
@@ -366,7 +360,7 @@
         delimiter: <span class="kw-2">&amp;</span>str,
         limit: <span class="prelude-ty">Option</span>&lt;usize&gt;,
         marker: <span class="kw-2">&amp;</span>str,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="comment">// The delimiter is used to disable recursive listing.
@@ -390,9 +384,7 @@
 
         req = req.header(<span class="string">"X-Auth-Token"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.token);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
@@ -401,8 +393,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         length: u64,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -427,7 +419,7 @@
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
         _arg: <span class="kw-2">&amp;</span>OpRead,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path)
             .trim_end_matches(<span class="string">'/'</span>)
             .to_string();
@@ -447,14 +439,12 @@
             req = req.header(header::RANGE, range.to_header());
         }
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>swift_copy(<span class="kw-2">&amp;</span><span class="self">self</span>, src_p: <span class="kw-2">&amp;</span>str, dst_p: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>swift_copy(<span class="kw-2">&amp;</span><span class="self">self</span>, src_p: <span class="kw-2">&amp;</span>str, dst_p: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="comment">// NOTE: current implementation is limited to same container and root
 
         </span><span class="kw">let </span>src_p = <span class="macro">format!</span>(
@@ -484,14 +474,14 @@
         <span class="comment">// if use PUT method, we need to set the content-length to 0.
         </span>req = req.header(<span class="string">"Content-Length"</span>, <span class="string">"0"</span>);
 
-        <span class="kw">let </span>body = AsyncBody::Empty;
+        <span class="kw">let </span>body = Buffer::new();
 
         <span class="kw">let </span>req = req.body(body).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>swift_get_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>swift_get_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>url = <span class="macro">format!</span>(
@@ -505,9 +495,7 @@
 
         req = req.header(<span class="string">"X-Auth-Token"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.token);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}

@@ -675,15 +675,6 @@
 <a href="#673" id="673">673</a>
 <a href="#674" id="674">674</a>
 <a href="#675" id="675">675</a>
-<a href="#676" id="676">676</a>
-<a href="#677" id="677">677</a>
-<a href="#678" id="678">678</a>
-<a href="#679" id="679">679</a>
-<a href="#680" id="680">680</a>
-<a href="#681" id="681">681</a>
-<a href="#682" id="682">682</a>
-<a href="#683" id="683">683</a>
-<a href="#684" id="684">684</a>
 </pre></div><pre class="rust"><code><span class="comment">// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
@@ -905,7 +896,7 @@
 }
 
 <span class="kw">impl </span>WebhdfsBackend {
-    <span class="kw">pub fn </span>webhdfs_create_dir_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+    <span class="kw">pub fn </span>webhdfs_create_dir_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
@@ -919,7 +910,7 @@
 
         <span class="kw">let </span>req = Request::put(<span class="kw-2">&amp;</span>url);
 
-        req.body(AsyncBody::Empty).map_err(new_request_build_error)
+        req.body(Buffer::new()).map_err(new_request_build_error)
     }
     <span class="doccomment">/// create object
     </span><span class="kw">pub async fn </span>webhdfs_create_object_request(
@@ -927,8 +918,8 @@
         path: <span class="kw-2">&amp;</span>str,
         size: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         args: <span class="kw-2">&amp;</span>OpWrite,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
@@ -942,9 +933,7 @@
 
         <span class="kw">let </span>req = Request::put(<span class="kw-2">&amp;</span>url);
 
-        <span class="kw">let </span>req = req
-            .body(AsyncBody::Empty)
-            .map_err(new_request_build_error)<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.body(Buffer::new()).map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>resp = <span class="self">self</span>.client.send(req).<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -985,7 +974,7 @@
         }
 
         <span class="kw">let </span>req = Request::post(url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>resp = <span class="self">self</span>.client.send(req).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -1004,11 +993,7 @@
         }
     }
 
-    <span class="kw">pub async fn </span>webhdfs_rename_object(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        from: <span class="kw-2">&amp;</span>str,
-        to: <span class="kw-2">&amp;</span>str,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webhdfs_rename_object(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>str, to: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>from = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, from);
         <span class="kw">let </span>to = build_rooted_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, to);
 
@@ -1024,7 +1009,7 @@
         }
 
         <span class="kw">let </span>req = Request::put(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
@@ -1034,8 +1019,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         location: <span class="kw-2">&amp;</span>str,
         size: u64,
-        body: AsyncBody,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+        body: Buffer,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>url = location.to_string();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(auth) = <span class="kw-2">&amp;</span><span class="self">self</span>.auth {
@@ -1054,7 +1039,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         sources: Vec&lt;String&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span>sources = sources
@@ -1076,14 +1061,14 @@
 
         <span class="kw">let </span>req = Request::post(url);
 
-        req.body(AsyncBody::Empty).map_err(new_request_build_error)
+        req.body(Buffer::new()).map_err(new_request_build_error)
     }
 
     <span class="kw">async fn </span>webhdfs_open_request(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         range: <span class="kw-2">&amp;</span>BytesRange,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;AsyncBody&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
             <span class="string">"{}/webhdfs/v1/{}?op=OPEN"</span>,
@@ -1102,13 +1087,13 @@
         }
 
         <span class="kw">let </span>req = Request::get(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(req)
     }
 
-    <span class="kw">pub async fn </span>webhdfs_list_status_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webhdfs_list_status_request(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
             <span class="string">"{}/webhdfs/v1/{}?op=LISTSTATUS"</span>,
@@ -1120,7 +1105,7 @@
         }
 
         <span class="kw">let </span>req = Request::get(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
@@ -1129,7 +1114,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         start_after: <span class="kw-2">&amp;</span>str,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
 
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
@@ -1145,7 +1130,7 @@
         }
 
         <span class="kw">let </span>req = Request::get(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
@@ -1154,15 +1139,12 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         path: <span class="kw-2">&amp;</span>str,
         range: BytesRange,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>req = <span class="self">self</span>.webhdfs_open_request(path, <span class="kw-2">&amp;</span>range).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">async fn </span>webhdfs_get_file_status(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        path: <span class="kw-2">&amp;</span>str,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">async fn </span>webhdfs_get_file_status(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
             <span class="string">"{}/webhdfs/v1/{}?op=GETFILESTATUS"</span>,
@@ -1175,13 +1157,13 @@
         }
 
         <span class="kw">let </span>req = Request::get(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
     </span>}
 
-    <span class="kw">pub async fn </span>webhdfs_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;oio::Buffer&gt;&gt; {
+    <span class="kw">pub async fn </span>webhdfs_delete(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Buffer&gt;&gt; {
         <span class="kw">let </span>p = build_abs_path(<span class="kw-2">&amp;</span><span class="self">self</span>.root, path);
         <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="macro">format!</span>(
             <span class="string">"{}/webhdfs/v1/{}?op=DELETE&amp;recursive=false"</span>,
@@ -1193,7 +1175,7 @@
         }
 
         <span class="kw">let </span>req = Request::delete(<span class="kw-2">&amp;</span>url)
-            .body(AsyncBody::Empty)
+            .body(Buffer::new())
             .map_err(new_request_build_error)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.client.send(req).<span class="kw">await
